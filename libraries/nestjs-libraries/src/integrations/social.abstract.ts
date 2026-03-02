@@ -121,11 +121,9 @@ export abstract class SocialAbstract {
       json = '{}';
     }
 
-    const handleError = this.handleErrors(json || '{}');
-
     if (
       request.status === 429 ||
-      (request.status === 500 && !handleError) ||
+      request.status === 500 ||
       json.includes('rate_limit_exceeded') ||
       json.includes('Rate limit')
     ) {
@@ -138,6 +136,8 @@ export abstract class SocialAbstract {
         ignoreConcurrency
       );
     }
+
+    const handleError = this.handleErrors(json || '{}');
 
     if (handleError?.type === 'retry') {
       await timer(5000);

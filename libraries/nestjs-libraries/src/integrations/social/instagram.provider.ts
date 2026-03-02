@@ -412,72 +412,21 @@ export class InstagramProvider
   }
 
   async pages(accessToken: string) {
-    const seenPageIds = new Set<string>();
-    const allFacebookPages: any[] = [];
-
-    const fetchPaginated = async (startUrl: string) => {
-      let nextUrl: string | undefined = startUrl;
-      while (nextUrl) {
-        const response = await (await fetch(nextUrl)).json();
-        if (response.data) {
-          for (const page of response.data) {
-            if (!seenPageIds.has(page.id)) {
-              seenPageIds.add(page.id);
-              allFacebookPages.push(page);
-            }
-          }
-        }
-        nextUrl = response.paging?.next;
-      }
-    };
-
-    // Fetch pages the user explicitly shared during the OAuth dialog
-    await fetchPaginated(
-      `https://graph.facebook.com/v20.0/me/accounts?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
-    );
-
-    // Also fetch pages via Business Manager API to discover pages
-    // not selected during the OAuth page selection step
-    try {
-      let bizUrl: string | undefined =
-        `https://graph.facebook.com/v20.0/me/businesses?access_token=${accessToken}`;
-
-      while (bizUrl) {
-        const bizResponse = await (await fetch(bizUrl)).json();
-        if (bizResponse.data) {
-          for (const business of bizResponse.data) {
-            try {
-              await fetchPaginated(
-                `https://graph.facebook.com/v20.0/${business.id}/owned_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
-              );
-            } catch {
-              // Continue with other businesses
-            }
-
-            try {
-              await fetchPaginated(
-                `https://graph.facebook.com/v20.0/${business.id}/client_pages?fields=id,instagram_business_account,username,name,picture.type(large)&limit=100&access_token=${accessToken}`
-              );
-            } catch {
-              // Continue with other businesses
-            }
-          }
-        }
-        bizUrl = bizResponse.paging?.next;
-      }
-    } catch {
-      // Business Manager API not available for all users
-    }
+    const { data } = await (
+      await fetch(
+        `https://graph.facebook.com/v20.0/me/accounts?fields=id,instagram_business_account,username,name,picture.type(large)&access_token=${accessToken}&limit=500`
+      )
+    ).json();
 
     const onlyConnectedAccounts = await Promise.all(
-      allFacebookPages
+      data
         .filter((f: any) => f.instagram_business_account)
         .map(async (p: any) => {
           return {
             pageId: p.id,
             ...(await (
               await fetch(
-                `https://graph.facebook.com/v20.0/${p.instagram_business_account.id}?fields=name,profile_picture_url&access_token=${accessToken}`
+                `https://graph.facebook.com/v20.0/${p.instagram_business_account.id}?fields=name,profile_picture_url&access_token=${accessToken}&limit=500`
               )
             ).json()),
             id: p.instagram_business_account.id,

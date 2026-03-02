@@ -12,7 +12,7 @@ import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { useDecisionModal } from '@gitroom/frontend/components/layout/new-modal';
 export const PublicComponent = () => {
   const user = useUser();
-  const { backendUrl, frontEndUrl, mcpUrl } = useVariables();
+  const { backendUrl, frontEndUrl } = useVariables();
   const toaster = useToaster();
   const fetch = useFetch();
   const decision = useDecisionModal();
@@ -25,7 +25,7 @@ export const PublicComponent = () => {
   }, [user]);
   const copyToClipboard2 = useCallback(() => {
     toaster.show('MCP copied to clipboard', 'success');
-    copy(`${mcpUrl || backendUrl}/mcp/` + user?.publicApi);
+    copy(`${backendUrl}/mcp/` + user?.publicApi);
   }, [user]);
 
   const rotateKey = useCallback(async () => {
@@ -121,13 +121,13 @@ export const PublicComponent = () => {
         <div className="my-[16px] mt-[16px] bg-sixth border-fifth items-center border rounded-[4px] p-[24px] flex gap-[24px]">
           <div className="flex items-center">
             {reveal2 ? (
-              `${mcpUrl || backendUrl}/mcp/` + user.publicApi
+              `${backendUrl}/mcp/` + user.publicApi
             ) : (
               <>
                 <div className="blur-sm">
-                  {(`${mcpUrl || backendUrl}/mcp/` + user.publicApi).slice(0, -5)}
+                  {(`${backendUrl}/mcp/` + user.publicApi).slice(0, -5)}
                 </div>
-                <div>{(`${mcpUrl || backendUrl}/mcp/` + user.publicApi).slice(-5)}</div>
+                <div>{(`${backendUrl}/mcp/` + user.publicApi).slice(-5)}</div>
               </>
             )}
           </div>
